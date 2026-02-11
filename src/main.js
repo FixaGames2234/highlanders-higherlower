@@ -375,11 +375,17 @@ class Menu extends Phaser.Scene {
     Session.socket.on("roomJoined", (room) => { Session.room = room; this.scene.start("lobby"); });
     Session.socket.on("roomUpdate", (room) => { Session.room = room; });
 
-    Session.socket.on("matchStarted", (room) => { Session.room = room; this.scene.start("online"); });
+    Session.socket.on("matchStarted", (room) => {Session.children.removeall();Session.cameras.main.setBackgroundColor("#0B0F1A"); Session.room = room; this.scene.start("online"); });
 
     Session.socket.on("roundStart", ({ room, roundTime }) => {
       Session.room = room;
-      this.game.events.emit("roundStart", { room, roundTime });
+      this.game.events.emit("roundStart", { room, roundTime }); this.playerText.setText(current.player);
+  this.statText.setText(current.label);
+
+  // THIS is the starting number
+  this.lineText.setText(current.value);
+
+  this.resultText.setText("?");
     });
 
     Session.socket.on("guessCount", (x) => this.game.events.emit("guessCount", x));
@@ -415,6 +421,10 @@ class Lobby extends Phaser.Scene {
   create() {
     const w = this.scale.width, h = this.scale.height;
     this.add.rectangle(w/2,h/2,w,h,0x070A12);
+    this.lineText = this.add.text(400, 260, "", {
+  fontSize: "48px",
+  color: "#ffffff"
+}).setOrigin(0.5);
 
     this.title = this.add.text(w/2, 18, "", { fontFamily:"Arial Black", fontSize:"28px", color:"#D7B56D" }).setOrigin(0.5,0);
     this.sub = this.add.text(w/2, 54, "Invite friends → they press JOIN and enter your room code.", { fontFamily:"Arial", fontSize:"16px", color:"#B9C2D3" }).setOrigin(0.5,0);
