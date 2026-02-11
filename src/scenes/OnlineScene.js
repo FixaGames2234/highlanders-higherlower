@@ -9,6 +9,20 @@ export class OnlineScene extends Phaser.Scene {
   constructor(){ super("online"); }
 
   create() {
+    this.baselineLabel = this.add.text(20, 72, "Baseline: —", {
+  fontFamily: "Arial Black",
+  fontSize: "18px",
+  color: "#F5F7FF"
+});
+
+// Round history (last 3)
+this.historyText = this.add.text(20, 100, "", {
+  fontFamily: "Arial",
+  fontSize: "14px",
+  color: "#B9C2D3",
+  lineSpacing: 6
+});
+this.history = [];	
     const w = this.scale.width, h = this.scale.height;
     this.add.rectangle(w/2,h/2,w,h,0x070A12);
 
@@ -33,6 +47,11 @@ export class OnlineScene extends Phaser.Scene {
 
     this.toast = this.add.text(w/2, h*0.60, "", { fontFamily:"Arial Black", fontSize:"20px", color:"#D7B56D" }).setOrigin(0.5);
     this.toast.setAlpha(0);
+    // Timer bar
+const barW = 260;
+this.timerBarBg = this.add.rectangle(this.scale.width - 20 - barW/2, 74, barW, 10, 0x2A3756).setOrigin(0.5);
+this.timerBarFill = this.add.rectangle(this.scale.width - 20 - barW, 74, barW, 10, 0xD7B56D).setOrigin(0, 0.5);
+this.timerBarWidth = barW;
 
     this.roundTime = 15;
     this.timeLeft = 15;
@@ -107,6 +126,17 @@ export class OnlineScene extends Phaser.Scene {
 
     const cur = room.current;
     const prev = room.previous;
+    // Persistent baseline text
+if (prev) {
+  this.baselineLabel.setText(`Baseline: ${Number(prev.value).toFixed(1)}`);
+  // Update history (keep last 3 baselines)
+  this.history.unshift(`${prev.player} • ${prev.label}: ${Number(prev.value).toFixed(1)}`);
+  this.history = this.history.slice(0, 3);
+  this.historyText.setText("Recent baselines:\n" + this.history.map((x,i)=>`${i+1}) ${x}`).join("\n"));
+} else {
+  this.baselineLabel.setText("Baseline: —");
+}
+
 
     cardFlip(this, this.card, () => {
       if (prev) {
@@ -225,6 +255,10 @@ export class OnlineScene extends Phaser.Scene {
   }
 
   update() {
-    this.timerText.setText(`Time: ${Math.max(0, this.timeLeft)}s`);
-  }
+  this.timerText.setText(`Time: ${Math.max(0, this.timeLeft)}s`);
+
+  const ratio = this.roundTime > 0 ? Math.max(0, this.timeLeft) / this.roundTime : 0;
+  this.timerBarFill.width = this.timerBarWidth * ratio;
+}
+
 }

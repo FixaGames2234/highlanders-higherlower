@@ -241,6 +241,16 @@ function maybeEndMatch(room) {
 
   return true;
 }
+function makeCard(room, game) {
+  return {
+    player: game.player,
+    date: game.date,
+    opponent: game.opponent,
+    label: room.statLabel,
+    value: z(game[room.statKey]),
+    raw: game
+  };
+}
 
 function startRound(room, roundTimeSec = 15) {
   room.round += 1;
@@ -413,9 +423,25 @@ io.on("connection", (socket) => {
     if (Number.isFinite(Number(targetScore))) room.targetScore = Math.max(3, Math.min(30, Number(targetScore)));
 
     room.players.forEach(p => { p.score = 0; p.streak = 0; p.bestStreak = 0; });
-    room.round = 0;
-    room.current = null;
-    room.previous = null;
+room.round = 0;
+room.current = null;
+room.previous = null;
+
+// -----------------------------
+// SEED BASELINE FOR ROUND 1
+// -----------------------------
+const seedGame = pickNextGame(room);
+if (seedGame) {
+  room.current = {
+    player: seedGame.player,
+    date: seedGame.date,
+    opponent: seedGame.opponent,
+    label: room.statLabel,
+    value: z(seedGame[room.statKey]),
+    raw: seedGame
+  };
+}
+// -----------------------------
 
     io.to(room.code).emit("matchStarted", publicRoom(room));
 
