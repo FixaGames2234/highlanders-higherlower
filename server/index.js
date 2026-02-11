@@ -7,7 +7,9 @@ import { nanoid } from "nanoid";
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.get("/", (req, res) => {
+  res.send("Highlanders server is running ✅");
+});
 app.get("/health", (req, res) => res.json({ ok: true, time: Date.now() }));
 
 const server = http.createServer(app);
